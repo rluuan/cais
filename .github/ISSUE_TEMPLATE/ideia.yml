@@ -1,0 +1,21 @@
+name: Ideia / Feature request
+description: Sugira algo novo / Suggest something new
+labels: [ideia]
+body:
+  - type: textarea
+    id: ideia
+    attributes:
+      label: O que você gostaria? / What would you like?
+    validations:
+      required: true
+  - type: textarea
+    id: por-que
+    attributes:
+      label: Para que serve? / Why is it useful?
+  - type: checkboxes
+    id: regras
+    attributes:
+      label: Regras do projeto / Project rules
+      options:
+        - label: A ideia não precisa de internet / The idea needs no network access
+          required: true

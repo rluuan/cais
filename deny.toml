@@ -1,0 +1,25 @@
+# Regras do cargo-deny: o build falha se qualquer biblioteca de rede,
+# telemetria ou relatório de erros remoto entrar no projeto, mesmo indiretamente.
+# Rodar:  cargo deny check
+
+[bans]
+multiple-versions = "allow"
+deny = [
+  # Clientes HTTP
+  { name = "reqwest" }, { name = "hyper" }, { name = "ureq" }, { name = "curl" },
+  { name = "isahc" }, { name = "surf" }, { name = "attohttpc" }, { name = "minreq" },
+  # Runtimes e sockets
+  { name = "tokio" }, { name = "async-std" }, { name = "smol" }, { name = "mio" },
+  { name = "socket2" }, { name = "tungstenite" }, { name = "quinn" },
+  # TLS
+  { name = "rustls" }, { name = "native-tls" }, { name = "openssl" }, { name = "openssl-sys" },
+  # Telemetria e relatório de erros
+  { name = "sentry" }, { name = "opentelemetry" }, { name = "posthog-rs" }, { name = "segment" },
+]
+
+[licenses]
+allow = ["MIT", "Apache-2.0", "Unicode-3.0", "Unicode-DFS-2016"]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"

@@ -1,0 +1,56 @@
+name: Release
+
+# Uma tag "v0.2.0" gera o .zip com o cais.exe e cria a versão no GitHub.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rust estável
+        run: rustup toolchain install stable --profile minimal
+
+      - name: Compilar
+        run: cargo build --release --locked
+
+      - name: Testes e provas de privacidade
+        shell: pwsh
+        run: |
+          cargo test --release --locked
+          ./scripts/verificar-privacidade.ps1
+
+      # Assinatura digital (evita o aviso do SmartScreen e de antivírus).
+      # Ative quando o projeto for aprovado no SignPath Foundation
+      # (assinatura gratuita para open source); veja docs/ASSINATURA.md.
+      # - name: Assinar
+      #   uses: signpath/github-action-submit-signing-request@v1
+      #   with:
+      #     api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+      #     organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+      #     project-slug: cais
+      #     signing-policy-slug: release-signing
+      #     github-artifact-id: ...
+
+      - name: Montar o .zip
+        shell: pwsh
+        run: |
+          $v = "${{ github.ref_name }}"
+          New-Item -ItemType Directory -Force pacote | Out-Null
+          Copy-Item target/release/cais.exe, README.md, README.en.md, LICENSE pacote/
+          Compress-Archive -Path pacote/* -DestinationPath "cais-$v-windows-x64.zip"
+          (Get-FileHash "cais-$v-windows-x64.zip" -Algorithm SHA256).Hash | Out-File -Encoding ascii "cais-$v-windows-x64.zip.sha256"
+
+      - name: Criar a versão no GitHub
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $v = "${{ github.ref_name }}"
+          gh release create $v "cais-$v-windows-x64.zip" "cais-$v-windows-x64.zip.sha256" --title "Cais $v" --generate-notes
